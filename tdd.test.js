@@ -22,7 +22,7 @@ const firstMultOperand = faker.random.number();
 const secondMultOperand = faker.random.number();
 
 test('get server informatom', async () => {
-  const response = await instance.get('/operation/information').catch(e => e);
+  const response = await instance.get('/information').catch(e => e);
 
   expect(response.status).toBe(200);
 
@@ -38,7 +38,7 @@ test('sum', async () => {
 
 
   const response = await instance
-    .get(`/${OPERATION_NAME.SUMMATION}?firstOperand=${firstSumOperand}&secondOperand=${secondSumOperand}`)
+    .get(`/operation/${OPERATION_NAME.SUMMATION}?firstOperand=${firstSumOperand}&secondOperand=${secondSumOperand}`)
     .catch(e => e);
 
   expect(response.status).toBe(200);
@@ -46,7 +46,7 @@ test('sum', async () => {
 
   expect(response.data.firstOperand).toBe(firstSumOperand);
   expect(response.data.secondOperand).toBe(secondSumOperand);
-  expect(response.data.sum).toBe(firstSumOperand + secondSumOperand);
+  expect(response.data.total).toBe(firstSumOperand + secondSumOperand);
 
   expect(typeof response.data.timeOfResponse).toBe('number');
 });
@@ -72,7 +72,7 @@ test('multiplication', async () => {
 
   expect(response.data.firstOperand).toBe(firstOperand);
   expect(response.data.secondOperand).toBe(secondOperand);
-  expect(response.data.mult).toBe(firstOperand * secondOperand);
+  expect(response.data.total).toBe(firstOperand * secondOperand);
 
   expect(typeof response.data.timeOfResponse).toBe('number');
 });
@@ -123,13 +123,13 @@ test('total operation information DESC', async () => {
 
   expect(firstOperation.operationName).toBe(OPERATION_NAME.MULTIPLICATION);
   expect(firstOperation.firstOperand).toBe(firstMultOperand);
-  expect(firstOperation.firstOpesecondOperandrand).toBe(secondMultOperand);
+  expect(firstOperation.secondOperand).toBe(secondMultOperand);
 
   expect(firstOperation.total).toBe(secondMultOperand * firstMultOperand);
 
   expect(secondOperation.operationName).toBe(OPERATION_NAME.SUMMATION);
   expect(secondOperation.firstOperand).toBe(firstSumOperand);
-  expect(secondOperation.firstOpesecondOperandrand).toBe(secondSumOperand);
+  expect(secondOperation.secondOperand).toBe(secondSumOperand);
 
   expect(secondOperation.total).toBe(secondSumOperand + firstSumOperand);
 
@@ -153,13 +153,13 @@ test('total operation information ASC', async () => {
 
   expect(secondOperation.operationName).toBe(OPERATION_NAME.MULTIPLICATION);
   expect(secondOperation.firstOperand).toBe(firstMultOperand);
-  expect(secondOperation.firstOpesecondOperandrand).toBe(secondMultOperand);
+  expect(secondOperation.secondOperand).toBe(secondMultOperand);
 
   expect(secondOperation.total).toBe(secondMultOperand * firstMultOperand);
 
   expect(firstOperation.operationName).toBe(OPERATION_NAME.SUMMATION);
   expect(firstOperation.firstOperand).toBe(firstSumOperand);
-  expect(firstOperation.firstOpesecondOperandrand).toBe(secondSumOperand);
+  expect(firstOperation.secondOperand).toBe(secondSumOperand);
 
   expect(firstOperation.total).toBe(secondSumOperand + firstSumOperand);
 
