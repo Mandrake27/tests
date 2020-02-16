@@ -11,8 +11,8 @@ const instance = axios.create({
 const sortedArrayByAlph = (arr = []) => ([...arr, 'timeOfResponse'].sort());
 
 const OPERATION_NAME = {
-  MULTIPLICATION: 'MULTIPLICATION',
-  SUMMATION: 'SUMMATION',
+  MULTIPLICATION: 'multiplication',
+  SUMMATION: 'summation',
 };
 
 const firstSumOperand = faker.random.number();
@@ -38,15 +38,15 @@ test('sum', async () => {
 
 
   const response = await instance
-    .get(`/${OPERATION_NAME.SUMMATION.toLowerCase()}?firstOperand=${firstSumOperand}&secondOperand=${secondSumOperand}`)
+    .get(`/${OPERATION_NAME.SUMMATION}?firstOperand=${firstSumOperand}&secondOperand=${secondSumOperand}`)
     .catch(e => e);
 
   expect(response.status).toBe(200);
   expect(Object.keys(response.data).sort()).toEqual(sortedArrayByAlph(['firstOperand', 'secondOperand', 'total']));
 
-  expect(response.data.firstOperand).toBe(firstOperand);
-  expect(response.data.secondOperand).toBe(secondOperand);
-  expect(response.data.sum).toBe(firstOperand + secondOperand);
+  expect(response.data.firstOperand).toBe(firstSumOperand);
+  expect(response.data.secondOperand).toBe(secondSumOperand);
+  expect(response.data.sum).toBe(firstSumOperand + secondSumOperand);
 
   expect(typeof response.data.timeOfResponse).toBe('number');
 });
@@ -64,7 +64,7 @@ test('get last operation', async () => {
 test('multiplication', async () => {
 
   const response = await instance
-    .get(`/operation/${OPERATION_NAME.MULTIPLICATION.toLowerCase()}?firstOperand=${firstMultOperand}&secondOperand=${secondMultOperand}`)
+    .get(`/operation/${OPERATION_NAME.MULTIPLICATION}?firstOperand=${firstMultOperand}&secondOperand=${secondMultOperand}`)
     .catch(e => e);
 
   expect(response.status).toBe(200);
@@ -83,7 +83,7 @@ test('get last operation', async () => {
   expect(response.status).toBe(200);
   expect(Object.keys(response.data).sort()).toEqual(sortedArrayByAlph(['lastOperationName']));
 
-  expect(response.data.lastOperationName).toBe(OPERATION_NAME.MULTIPLICATION.toLowerCase());
+  expect(response.data.lastOperationName).toBe(OPERATION_NAME.MULTIPLICATION);
 
 });
 
@@ -94,14 +94,14 @@ test('total operation information', async () => {
   expect(Object.keys(response.data).sort()).toEqual(sortedArrayByAlph(
     [
       'totalAmountOfOperation', 
-      OPERATION_NAME.MULTIPLICATION.toLowerCase(),
-      OPERATION_NAME.SUMMATION.toLowerCase(),
+      OPERATION_NAME.MULTIPLICATION,
+      OPERATION_NAME.SUMMATION,
     ]
   ));
 
   expect(response.data.totalAmountOfOperation).toBe(2);
-  expect(response.data[OPERATION_NAME.MULTIPLICATION.toLowerCase()]).toBe(1);
-  expect(response.data[OPERATION_NAME.SUMMATION.toLowerCase()]).toBe(1);
+  expect(response.data[OPERATION_NAME.MULTIPLICATION]).toBe(1);
+  expect(response.data[OPERATION_NAME.SUMMATION]).toBe(1);
 
 });
 
