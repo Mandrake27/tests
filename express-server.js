@@ -26,8 +26,19 @@ const addToHistory = (obj, operationName) => {
   history.push(newObj);
 }
 
-const startServer = () => {
-  app.listen(port);
+const replaceFirstToEnd = (arr) => {
+  const clonnedArr = [...arr];
+  const shiftedElem = clonnedArr.shift();
+  clonnedArr.push(shiftedElem);
+  return clonnedArr;
+}
+
+const startorShutDownServer = (turnOff = false) => {
+  console.log(turnOff);
+  const server = app.listen(port);
+  if (turnOff) {
+    server.close();
+  }
 };
 
 const wait = (delay = 200) =>
@@ -37,96 +48,95 @@ const wait = (delay = 200) =>
     }, delay);
   });
 
-
-app.get('/information', async (req, res) => {
+const getTimeOfResponse = async() => {
   const start = new Date();
   await wait();
-  const data = {
+  return new Date - start;
+};
+
+app.get('/information', async (req, res) => {
+  const timeOfResponse = await getTimeOfResponse();
+  const information = {
     version,
     uptime: Math.floor(process.uptime()),
-    timeOfResponse: new Date() - start
+    timeOfResponse,
   };
-  res.status(200).send(data);
+  res.status(200).send(information);
 });
 
 app.get(`/operation/${OPERATION_NAME.SUMMATION}`, async (req, res) => {
   const { firstOperand, secondOperand } = req.query;
-  const start = new Date();
-  await wait();
-  const data = {
+  const timeOfResponse = await getTimeOfResponse();
+  const sumResults = {
     firstOperand: Number(firstOperand),
     secondOperand: Number(secondOperand),
     total: Number(firstOperand) + Number(secondOperand),
-    timeOfResponse: new Date() - start
+    timeOfResponse,
   };
-  addToHistory(data, OPERATION_NAME.SUMMATION);
+  addToHistory(sumResults, OPERATION_NAME.SUMMATION);
   lastOperationName = OPERATION_NAME.SUMMATION;
   totalMathOperations.summation += 1;
   totalMathOperations.total += 1;
-  res.status(200).send(data);
+  res.status(200).send(sumResults);
 });
 
 app.get(`/operation/last`, async (req, res) => {
-  const start = new Date();
-  await wait();
-  const data = {
+  const timeOfResponse = await getTimeOfResponse();
+  const lastOperations = {
     lastOperationName,
-    timeOfResponse: new Date() - start
+    timeOfResponse,
   };
-  res.status(200).send(data);
+  res.status(200).send(lastOperations);
 });
 
 app.get(`/operation/${OPERATION_NAME.MULTIPLICATION}`, async (req, res) => {
   const { firstOperand, secondOperand } = req.query;
-  const start = new Date();
-  await wait();
-  const data = {
+  const timeOfResponse = await getTimeOfResponse();
+  const multiplyResults = {
     firstOperand: Number(firstOperand),
     secondOperand: Number(secondOperand),
     total: Number(firstOperand) * Number(secondOperand),
-    timeOfResponse: new Date() - start
+    timeOfResponse,
   };
-  addToHistory(data, OPERATION_NAME.MULTIPLICATION);
+  addToHistory(multiplyResults, OPERATION_NAME.MULTIPLICATION);
   lastOperationName = OPERATION_NAME.MULTIPLICATION;
   totalMathOperations.multiplication += 1;
   totalMathOperations.total += 1;
-  res.status(200).send(data);
+  res.status(200).send(multiplyResults);
 });
 
 app.get(`/operation/last`, async (req, res) => {
-  const start = new Date();
-  await wait();
-  const data = {
+  const timeOfResponse = await getTimeOfResponse();
+  const lastOperations = {
     lastOperationName,
-    timeOfResponse: new Date() - start
+    timeOfResponse,
   };
-  res.status(200).send(data);
+  res.status(200).send(lastOperations);
 });
 
 app.get(`/operation/information`, async (req, res) => {
-  const start = new Date();
+  const timeOfResponse = await getTimeOfResponse();
   const { multiplication, summation, total } = totalMathOperations;
-  await wait();
-  const data = {
+  const operationsInfo = {
     totalAmountOfOperation: total,
     multiplication,
     summation,
-    timeOfResponse: new Date() - start
+    timeOfResponse,
   };
-  res.status(200).send(data);
+  res.status(200).send(operationsInfo);
 });
 
 app.get('/operation/history', async(req, res) => {
-  const start = new Date();
-  await wait();
-  const data = {
-    history,
-    timeOfResponse: new Date() - start
+  const { sort } = req.query;
+  const descOrderedArr = replaceFirstToEnd(history);
+  const timeOfResponse = await getTimeOfResponse();
+  const historyInfo = {
+    history: sort === 'DESC' ? descOrderedArr : history,
+    timeOfResponse,
   }
-  console.log(data);
-  res.status(200).send(data);
+  res.status(200).send(historyInfo);
 })
 
-startServer();
-module.exports = startServer;
+// startorShutDownServer();
+module.exports = startorShutDownServer;
 
