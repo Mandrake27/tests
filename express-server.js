@@ -9,8 +9,6 @@ const OPERATION_NAME = {
 
 let lastOperationName;
 
-let timeOfResponse;
-
 const totalMathOperations = {
   total: 0,
   multiplication: 0,
@@ -29,25 +27,38 @@ const addToHistory = (obj, operationName) => {
 
 const sortByTime = arr => {
   const clonnedArr = [...arr];
-  return clonnedArr.sort((a, b) => a.timeOfResponse - b.timeOfResponse);
+  return clonnedArr.sort((a, b) => b.total - a.total);
 };
 
-const requestTime = function(req, res, next) {
+app.use((req, res, next) => {
   const startTime = process.hrtime();
-  const elapsedHours = process.hrtime(startTime);
-  timeOfResponse = elapsedHours[1] / 1e2;
+  res.sendWithHistory = data => {
+    const elapsedHours = process.hrtime(startTime);
+    const timeOfResponse = elapsedHours[1] / 1e2;
+    const result = { ...data, timeOfResponse };
+    return result
+  }
   next();
-};
+})
 
-app.use(requestTime);
+app.use((req, res, next) => {
+  const startTime = process.hrtime();
+  res.sendJson = data => {
+    const elapsedHours = process.hrtime(startTime);
+    const timeOfResponse = elapsedHours[1] / 1e2;
+    const finalResult = { ...data, timeOfResponse };
+    res.status(200).send(finalResult);
+  };
+  next();
+});
+
 
 app.get('/information', async (req, res) => {
   const information = {
     version,
-    uptime: Math.floor(process.uptime()),
-    timeOfResponse
+    uptime: Math.floor(process.uptime())
   };
-  res.status(200).send(information);
+  res.sendJson(information);
 });
 
 app.get(`/operation/${OPERATION_NAME.SUMMATION}`, async (req, res) => {
@@ -56,21 +67,20 @@ app.get(`/operation/${OPERATION_NAME.SUMMATION}`, async (req, res) => {
     firstOperand: Number(firstOperand),
     secondOperand: Number(secondOperand),
     total: Number(firstOperand) + Number(secondOperand),
-    timeOfResponse
   };
   addToHistory(sumResults, OPERATION_NAME.SUMMATION);
   lastOperationName = OPERATION_NAME.SUMMATION;
   totalMathOperations.summation += 1;
   totalMathOperations.total += 1;
-  res.status(200).send(sumResults);
+  const summationResult = await res.sendWithHistory(sumResults);
+  res.sendJson(summationResult);
 });
 
 app.get(`/operation/last`, async (req, res) => {
   const lastOperations = {
     lastOperationName,
-    timeOfResponse
   };
-  res.status(200).send(lastOperations);
+  res.sendJson(lastOperations);
 });
 
 app.get(`/operation/${OPERATION_NAME.MULTIPLICATION}`, async (req, res) => {
@@ -79,21 +89,20 @@ app.get(`/operation/${OPERATION_NAME.MULTIPLICATION}`, async (req, res) => {
     firstOperand: Number(firstOperand),
     secondOperand: Number(secondOperand),
     total: Number(firstOperand) * Number(secondOperand),
-    timeOfResponse
   };
   addToHistory(multiplyResults, OPERATION_NAME.MULTIPLICATION);
   lastOperationName = OPERATION_NAME.MULTIPLICATION;
   totalMathOperations.multiplication += 1;
   totalMathOperations.total += 1;
-  res.status(200).send(multiplyResults);
+  const multiplicationResult = res.sendWithHistory(multiplyResults);
+  res.sendJson(multiplicationResult);
 });
 
 app.get(`/operation/last`, async (req, res) => {
   const lastOperations = {
     lastOperationName,
-    timeOfResponse
   };
-  res.status(200).send(lastOperations);
+  res.sendJson(lastOperations);
 });
 
 app.get(`/operation/information`, async (req, res) => {
@@ -102,19 +111,23 @@ app.get(`/operation/information`, async (req, res) => {
     totalAmountOfOperation: total,
     multiplication,
     summation,
-    timeOfResponse
   };
-  res.status(200).send(operationsInfo);
+  res.sendJson(operationsInfo);
 });
 
 app.get('/operation/history', async (req, res) => {
   const { sort } = req.query;
-  const descOrderedArr = sortByTime(history);
+  const timeHistory = [];
+  history.forEach(obj => {
+    const changedObj = res.sendWithHistory(obj);
+    timeHistory.push(changedObj);
+  })
+  const descOrderedArr = sortByTime(timeHistory);
   const historyInfo = {
-    history: sort === 'DESC' ? descOrderedArr : history,
-    timeOfResponse
+    history: sort === 'DESC' ? descOrderedArr : timeHistory,
   };
-  res.status(200).send(historyInfo);
+  res.sendJson(historyInfo);
 });
+
 
 module.exports = app;
